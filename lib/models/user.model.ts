@@ -14,17 +14,17 @@ name:{
     type:String,
     required:true
 },
-Image:String,
+image:String,
 bio:String,
 threads:[
-    {
+    { 
         type:mongoose.Schema.Types.ObjectId,
         ref:'Thread'
     }
 ],
-onboarding:{
-    type:Boolean,
-    default:false,
+onboarded:{
+    type: Boolean,
+    default: false,
 },
 communities:[
     {
