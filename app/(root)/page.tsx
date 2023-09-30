@@ -20,7 +20,7 @@ async function Home() {
                 key={post._id}
                 id={post._id}
                 currentUserId={user?.id || ""}
-                parentId={post.parentId}
+                parentid={post.parentid}
                 content={post.text}
                 author={post.author}
                 community={post.community}

@@ -45,15 +45,15 @@ export async function fetchPosts(pageNummber = 1, pageSize = 20){
         //calculate the number of posts to skip:
         const skipAmount = (pageNummber-1)*pageSize;
         //fetch the posts that heve no parents(top-level threads...)
-        const postQuery = Thread.find({parentId:{$in:[null, undefined]}}).sort({createdAt:'desc'}).skip(skipAmount).limit(pageSize).populate({path:'author', model:User}).populate({
+        const postQuery = Thread.find({parentid:{$in:[null, undefined]}}).sort({createdAt:'desc'}).skip(skipAmount).limit(pageSize).populate({path:'author', model:User}).populate({
             path:'children',
             populate:{
                 path:'author',
                 model:User,
-                select:"_id name parentId image"
+                select:"_id name parentid image"
             }
         });
-        const totalPostsCount = await Thread.countDocuments({parentId:{$in:[null,undefined]},});
+        const totalPostsCount = await Thread.countDocuments({parentid:{$in:[null,undefined]},});
         const posts = await postQuery.exec()
         const isNext = totalPostsCount> skipAmount+posts.length;
         return {posts, isNext}
@@ -77,7 +77,7 @@ export async function fetchThreadById(id:string){
                 {
                 path:'author',
                 model:User,
-                select:"_id id name parentId image"    
+                select:"_id id name parentid image"    
             },
             {
                 path:'children',
@@ -85,7 +85,7 @@ export async function fetchThreadById(id:string){
                 populate:{
                     path:'author', 
                     model:User,
-                    select:"_id id name parentId image"
+                    select:"_id id name parentid image"
                 }
             }
          ]
@@ -93,5 +93,39 @@ export async function fetchThreadById(id:string){
         return thread;
     } catch (error:any) {
         throw new Error(`Error fetching thread:${error.message}`)
+    }
+}
+
+export async function addCommentToThread(
+    threadId:string,
+    commentText:string,
+    userId:string,
+    path:string,
+) {
+    connectToDB();
+    try {
+        //adding a comment
+        //First we have to find Original thread by its ID
+        const originalThread = await Thread.findById(threadId);
+        if(!originalThread){
+            throw new Error("Thread not found")
+        }
+        //create a new thread with the comment text
+        const commentThread = new Thread({
+            text:commentText,
+            author:userId,
+            parentid:threadId
+        })
+
+        //save the new thread
+        const saveCommentThread = await commentThread.save();
+        //update the original thread to include the new comment
+        originalThread.children.push(saveCommentThread._id);
+        //save the original thread
+        await originalThread.save()
+        revalidatePath(path)// so that it shows instantly
+
+    } catch (error:any) {
+        throw new Error(`Error adding comment to thread: ${error.message}`)
     }
 }
