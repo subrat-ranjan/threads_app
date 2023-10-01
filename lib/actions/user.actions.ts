@@ -5,6 +5,7 @@ import User from "../models/user.model";
 import { connectToDB } from "../mongoose"
 import Thread from "../models/threadmodel";
 import { FilterQuery, SortOrder } from "mongoose";
+import Community from "../models/community.model";
 
 interface Params{
     userId:string,
@@ -50,10 +51,10 @@ export async function fetchUser(userId:string){
         connectToDB();
 
         return await User.findOne({ id: userId})
-            // .populate({
-            // path:'communities',
-            // model:Community
-        // })
+            .populate({
+            path:'communities',
+            model:Community,
+        })
     } catch (error:any) {
         throw new Error(`Failed to fetch user: ${error.message}`)
     }
@@ -69,15 +70,22 @@ export async function fetchUserPosts(userId:string) {
         .populate({
             path:"threads",
             model:Thread,
-            populate:{
-                path:'children',
-                model:Thread,
-                populate:{
-                    path:'author',
-                    model:User,
-                    select:"name image id"
-                }
-            }
+            populate: [
+                {
+                  path: "community",
+                  model: Community,
+                  select: "name id image _id", // Select the "name" and "_id" fields from the "Community" model
+                },
+                {
+                  path: "children",
+                  model: Thread,
+                  populate: {
+                    path: "author",
+                    model: User,
+                    select: "name image id", // Select the "name" and "_id" fields from the "User" model
+                  },
+                },
+              ],
         })
         return threads;
     } catch (error:any) {
@@ -117,8 +125,8 @@ export async function fetchUsers({
          
         const totalUserCount = await User.countDocuments(query)
         const users = await userquery.exec();
-        const isnext= totalUserCount > skipAmount + users.length
-        return {users, isnext}
+        const isNext= totalUserCount > skipAmount + users.length
+        return {users, isNext}
     } catch (error:any) {
         throw new Error(`Failed to fetch users: ${error.message}`)
     }
