@@ -15,7 +15,7 @@ function DeleteThread({ threadId, currentUserId, authorId, parentid, isComment }
   const pathname = usePathname();
   const router = useRouter();
 
-  if (currentUserId! == authorId || pathname === "/") return null;
+  if (currentUserId !== authorId || pathname === "/") return null;
 
   return (
     <Image

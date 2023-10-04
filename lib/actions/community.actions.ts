@@ -17,11 +17,10 @@ export async function createCommunity(
   createdById: string // Change the parameter name to reflect it's an id
 ) {
   try {
-    connectToDB();
 
+    connectToDB();
     // Find the user with the provided unique id
     const user = await User.findOne({ id: createdById });
-
     if (!user) {
       throw new Error("User not found"); // Handle the case if the user with the id is not found
     }

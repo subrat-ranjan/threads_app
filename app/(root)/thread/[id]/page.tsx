@@ -32,7 +32,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
       </div>
 
       <div className="mt-7">
-        <Comment threadId={thread.id} currentUserImg={userInfo.imageUrl} currentUserId={JSON.stringify(userInfo._id)} />
+        <Comment threadId={thread.id} currentUserImg={userInfo.image} currentUserId={JSON.stringify(userInfo._id)} />
       </div>
 
       <div className="mt-10 ">
